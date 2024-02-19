@@ -9,6 +9,7 @@
 #include <thread>
 #include <vector>
 #include <cstring>
+#include <mutex>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -17,6 +18,7 @@
 #endif
 
 
+std::mutex whisper_mutex;
 struct whisper_context * g_ctx = nullptr;
 
 typedef struct {
@@ -247,12 +249,15 @@ int load(const char *model_path) {
     struct whisper_context_params cparams;
     cparams.use_gpu = true;
 
+    whisper_mutex.lock();
     g_ctx = whisper_init_from_file_with_params(model_path, cparams);
     if (g_ctx == nullptr) {
+        whisper_mutex.unlock();
         fprintf(stderr, "error: failed to initialize whisper context\n");
         return -1;
     }
 
+    whisper_mutex.unlock();
     printf("load model %s successfully\n", model_path);
     return 0;
 }
@@ -269,9 +274,11 @@ transcribe_result_t transcribe(const char* audio_path, const char* language = "a
     transcribe_result_t result;
     result.success = false;
 
+    whisper_mutex.lock();
     // read audio
     if (!::read_wav(audio_path, pcmf32, pcmf32s, params.diarize)) {
         fprintf(stderr, "error: failed to read WAV file '%s'\n", audio_path);
+        whisper_mutex.unlock();
         return result;
     }
 
@@ -374,6 +381,7 @@ transcribe_result_t transcribe(const char* audio_path, const char* language = "a
 
 
         if (whisper_full_parallel(g_ctx, wparams, pcmf32.data(), pcmf32.size(), params.n_processors) != 0) {
+            whisper_mutex.unlock();
             fprintf(stderr, "%s: failed to process audio\n", audio_path);
             result.success = false;
             return result;
@@ -398,13 +406,17 @@ transcribe_result_t transcribe(const char* audio_path, const char* language = "a
         result.segments.emplace_back(segment);
     }
 
+    whisper_mutex.unlock();
     result.success = true;
     return result;
 }
 
 void destroy(void) {
     if (g_ctx != nullptr) {
+        whisper_mutex.lock();
         whisper_free(g_ctx);
+        g_ctx = nullptr;
+        whisper_mutex.unlock();
         printf("destroy whisper context!\n");
     }
 }
@@ -424,6 +436,10 @@ void destroy(void) {
 //     destroy();
 //     return 0;
 // }
+
+bool is_initialized(void) {
+    return g_ctx != nullptr;
+}
 
 namespace py = pybind11;
 PYBIND11_MODULE(pywhisper, m) {
@@ -445,6 +461,7 @@ PYBIND11_MODULE(pywhisper, m) {
         .def_readwrite("end_tm", &segment_t::end_tm)
         .def_readwrite("text", &segment_t::text);
 
+    m.def("is_initialized", &is_initialized, "whether whisiper context is initialized");
     m.def("load", &load, py::arg("model_path"), "load whisper model");
     m.def("transcribe", &transcribe,
         py::arg("audio_path"), py::arg("langugage") = "auto", py::arg("beam_size") = 5,

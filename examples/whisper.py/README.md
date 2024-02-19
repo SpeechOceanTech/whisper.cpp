@@ -11,14 +11,7 @@ WHISPER_CUBLAS=1 make pywhisper.so
 ```
 
 ## 数据结构和接口
-
-接口列表：
-- 是否已经初始化，`is_initialized() -> bool`
-- 加载模型，`load(model_path: str) -> int`
-- 转写，`transcribe(audio_path: str, langugage: str = 'auto', beam_size: int = 5) -> transcribe_result_t` 
-- 销毁上下文，`destroy()`
-
-数据结构
+数据结构：
 
 ```python
  from typing import List
@@ -36,6 +29,12 @@ class transcribe_result_t:
         self.success = success
         self.segments = segments
 ```
+
+接口列表：
+- 是否已经初始化，`is_initialized() -> bool`
+- 加载模型，`load(model_path: str) -> int`
+- 转写，`transcribe(audio_path: str, langugage: str = 'auto', beam_size: int = 5) -> transcribe_result_t` 
+- 销毁上下文，`destroy()`
 
 ## 示例
 

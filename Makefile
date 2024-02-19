@@ -355,8 +355,8 @@ main: examples/main/main.cpp $(SRC_COMMON) $(WHISPER_OBJ)
 	$(CXX) $(CXXFLAGS) examples/main/main.cpp $(SRC_COMMON) $(WHISPER_OBJ) -o main $(LDFLAGS)
 	./main -h
 
-pywhisper.so: examples/main/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ)
-	$(CXX) $(PYBIND11FLAGS) $(CXXFLAGS) examples/main/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ) -o pywhisper.so $(LDFLAGS)
+pywhisper.so: examples/whisper.py/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ)
+	$(CXX) $(PYBIND11FLAGS) $(CXXFLAGS) examples/whisper.py/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ) -o pywhisper.so $(LDFLAGS)
 
 
 bench: examples/bench/bench.cpp $(WHISPER_OBJ)

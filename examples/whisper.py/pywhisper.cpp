@@ -398,7 +398,6 @@ transcribe_result_t transcribe(const char* audio_path, const char* language = "a
         result.segments.emplace_back(segment);
     }
 
-    whisper_print_timings(g_ctx);
     result.success = true;
     return result;
 }

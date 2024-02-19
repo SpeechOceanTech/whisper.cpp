@@ -41,6 +41,7 @@ endif
 CFLAGS   = -I.              -O3 -DNDEBUG -std=c11   -fPIC
 CXXFLAGS = -I. -I./examples -O3 -DNDEBUG -std=c++11 -fPIC
 LDFLAGS  =
+PYBIND11FLAGS = -shared -std=c++11 -fPIC $(shell python3 -m pybind11 --includes) $(shell python3-config --cflags)
 
 # clock_gettime came in POSIX.1b (1993)
 # CLOCK_MONOTONIC came in POSIX.1-2001 / SUSv3 as optional
@@ -209,7 +210,7 @@ ifdef WHISPER_CUBLAS
 	LDFLAGS     += -lcublas -lculibos -lcudart -lcublasLt -lpthread -ldl -lrt -L/usr/local/cuda/lib64 -L/opt/cuda/lib64 -L$(CUDA_PATH)/targets/$(UNAME_M)-linux/lib
 	WHISPER_OBJ += ggml-cuda.o
 	NVCC        = nvcc
-	NVCCFLAGS   = --forward-unknown-to-host-compiler -arch=$(CUDA_ARCH_FLAG)
+	NVCCFLAGS   = --forward-unknown-to-host-compiler
 
 ggml-cuda.o: ggml-cuda.cu ggml-cuda.h
 	$(NVCC) $(NVCCFLAGS) $(CXXFLAGS) -Wno-pedantic -c $< -o $@
@@ -289,6 +290,7 @@ $(info I CXXFLAGS: $(CXXFLAGS))
 $(info I LDFLAGS:  $(LDFLAGS))
 $(info I CC:       $(CCV))
 $(info I CXX:      $(CXXV))
+$(info I PYBIND11: $(PYBIND11FLAGS))
 $(info )
 
 #
@@ -352,6 +354,10 @@ SRC_COMMON_SDL = examples/common-sdl.cpp
 main: examples/main/main.cpp $(SRC_COMMON) $(WHISPER_OBJ)
 	$(CXX) $(CXXFLAGS) examples/main/main.cpp $(SRC_COMMON) $(WHISPER_OBJ) -o main $(LDFLAGS)
 	./main -h
+
+pywhisper.so: examples/main/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ)
+	$(CXX) $(PYBIND11FLAGS) $(CXXFLAGS) examples/main/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ) -o pywhisper.so $(LDFLAGS)
+
 
 bench: examples/bench/bench.cpp $(WHISPER_OBJ)
 	$(CXX) $(CXXFLAGS) examples/bench/bench.cpp $(WHISPER_OBJ) -o bench $(LDFLAGS)

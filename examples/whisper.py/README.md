@@ -50,7 +50,10 @@ pywhisper.load("/data/models/whisper/ggml/base.bin")
 pywhisper.is_initialized()
 
 # 转写
-pywhisper.transcribe("/home/rd/Downloads/en-cn.wav")
+result = pywhisper.transcribe("/home/rd/Downloads/en-cn.wav")
+for seg in result.segments:
+   print(f"start_tm: {round(seg.start_tm / 1000, 2)}, end_tm: {round(seg.end_tm / 1000, 2)}, text: {seg.text}")
+# start_tm: 0.0, end_tm: 4.98, text:  In a world, we should do everything to add to the greening of our cities.
 
 # 销毁上下文
 pywhisper.destroy()

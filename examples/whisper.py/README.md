@@ -37,7 +37,7 @@ class transcribe_result_t:
         self.segments = segments
 ```
 
-## 使用
+## 示例
 
 ```python
 # 编译成动态库后，导入pywhisper包
@@ -46,7 +46,7 @@ import pywhisper
 # 加载模型
 pywhisper.load("/data/models/whisper/ggml/base.bin")
 
-# 检查是否初始化，返回结构是true
+# 检查是否初始化，返回结果是true
 pywhisper.is_initialized()
 
 # 转写

@@ -5,6 +5,13 @@
 
 ## 编译
 
+修改Makefile，新增如下内容
+```makefile
+PYBIND11FLAGS = -shared -std=c++11 -fPIC $(shell python3 -m pybind11 --includes) $(shell python3-config --cflags)
+pywhisper.so: examples/whisper.py/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ)
+	$(CXX) $(PYBIND11FLAGS) $(CXXFLAGS) examples/whisper.py/pywhisper.cpp $(SRC_COMMON) $(WHISPER_OBJ) -o pywhisper.so $(LDFLAGS)
+```
+
 ```bash
 # cd 项目whisper.cpp目录下，执行下面的命令
 WHISPER_CUBLAS=1 make pywhisper.so

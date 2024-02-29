@@ -263,13 +263,21 @@ int load(const char *model_path) {
 }
 
 // Transcribe audio to text
-transcribe_result_t transcribe(const char* audio_path, const char* language = "auto", int beam_size = 5) {
+transcribe_result_t transcribe(
+    const char* audio_path,
+    const char* language = "auto",
+    int beam_size = 5,
+    const char* prompt = ""
+) {
     whisper_params params;
     std::vector<float> pcmf32;               // mono-channel F32 PCM
     std::vector<std::vector<float>> pcmf32s; // stereo-channel F32 PCM
 
     params.language = language;
     params.beam_size = beam_size;
+    if (strlen(prompt) != 0) {
+        params.prompt = prompt;
+    }
 
     transcribe_result_t result;
     result.success = false;
@@ -464,7 +472,10 @@ PYBIND11_MODULE(pywhisper, m) {
     m.def("is_initialized", &is_initialized, "whether whisiper context is initialized");
     m.def("load", &load, py::arg("model_path"), "load whisper model");
     m.def("transcribe", &transcribe,
-        py::arg("audio_path"), py::arg("langugage") = "auto", py::arg("beam_size") = 5,
+        py::arg("audio_path"),
+        py::arg("langugage") = "auto",
+        py::arg("beam_size") = 5,
+        py::arg("prompt") = "",
         "transcribe audio to text");
     m.def("destroy", &destroy, "destroy whisper context");
 }
